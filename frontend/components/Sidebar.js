@@ -18,6 +18,7 @@ const categories = [
 export default function Sidebar({ isOpen, toggleSidebar, user, onPreferencesUpdate }) {
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -34,9 +35,14 @@ export default function Sidebar({ isOpen, toggleSidebar, user, onPreferencesUpda
       if (snap.exists()) {
         const prefs = snap.data().preferences || [];
         setSelected(prefs);
+      } else {
+        setSelected([]);
       }
+      setPreferencesLoaded(true);
     } catch (error) {
       console.error("Error loading preferences:", error);
+      setSelected([]);
+      setPreferencesLoaded(true);
     }
   };
 
@@ -133,14 +139,14 @@ export default function Sidebar({ isOpen, toggleSidebar, user, onPreferencesUpda
                   onClick={() => toggleCategory(category.id)}
                   disabled={loading}
                   className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${
-                    selected.includes(category.id)
+                    preferencesLoaded && selected.includes(category.id)
                       ? "bg-blue-50 border-2 border-blue-200 text-blue-800"
                       : "bg-gray-50 border-2 border-transparent text-gray-700 hover:bg-gray-100"
                   } ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   <span className="text-xl">{category.icon}</span>
                   <span className="font-medium">{category.name}</span>
-                  {selected.includes(category.id) && (
+                  {preferencesLoaded && selected.includes(category.id) && (
                     <svg className="w-5 h-5 ml-auto text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -149,7 +155,7 @@ export default function Sidebar({ isOpen, toggleSidebar, user, onPreferencesUpda
               ))}
             </div>
             
-            {selected.length > 0 && (
+            {preferencesLoaded && selected.length > 0 && (
               <div className="mt-6 p-4 bg-green-50 rounded-lg">
                 <p className="text-sm text-green-800">
                   ✓ {selected.length} categories selected
